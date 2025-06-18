@@ -2,7 +2,7 @@ import {v} from "convex/values"
 import {query,mutation} from "./_generated/server"
 export const getTasks=query({
     args: {},
-    handler: async (ctx,args) => {
+    handler: async (ctx) => {
         const tasks =await ctx.db.query("tasks").collect()
         return tasks
     }
