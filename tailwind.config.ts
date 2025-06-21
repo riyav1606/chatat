@@ -29,6 +29,9 @@ const config: Config = {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
+        borderColor: {
+          DEFAULT: "hsl(var(--border))", // ✅ Fix for border-border
+        },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
