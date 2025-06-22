@@ -1,11 +1,16 @@
 'use client';
-import { ListFilter,  MessageSquareDiff, Search} from "lucide-react";
+import { ListFilter, Search} from "lucide-react";
 import { Input } from "../ui/input";
 import ThemeSwitch from "./theme-switch";
 import { UserButton } from "@clerk/clerk-react";
-
+import UserListDialog from "./user-list-dialog";
+import { useConvexAuth , useQuery} from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import Conversation from "./conversation";
 const LeftPanel = () => {
-	const conversations = [];
+	
+	const {isAuthenticated}=useConvexAuth();
+	const conversations = useQuery(api.conversations.getMyConversations, isAuthenticated?undefined:"skip");
 
 	return (
 		<div className='w-1/4 border-gray-600 border-r'>
@@ -15,7 +20,7 @@ const LeftPanel = () => {
 					<UserButton />
 
 					<div className='flex items-center gap-3'>
-						<MessageSquareDiff size={20} /> {/* TODO: This line will be replaced with <UserListDialog /> */}
+						{isAuthenticated && <UserListDialog/>}
 						<ThemeSwitch />
 					</div>
 				</div>
@@ -38,7 +43,9 @@ const LeftPanel = () => {
 
 			{/* Chat List */}
 			<div className='my-3 flex flex-col gap-0 max-h-[80%] overflow-auto'>
-				{/* Conversations will go here*/}
+				{conversations?.map((conversation)=>(
+					<Conversation key={conversation._id} conversation={conversation}/>
+				))}
 
 				{conversations?.length === 0 && (
 					<>
