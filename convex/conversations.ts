@@ -1,7 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-// ✅ Create Conversation
 export const createConversation = mutation({
 	args: {
 		participants: v.array(v.id("users")),
@@ -14,12 +13,18 @@ export const createConversation = mutation({
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity) throw new ConvexError("Unauthorized");
 
-		// ✅ Ensure consistent participant comparison
-		const sortedParticipants = [...args.participants].sort();
+		// jane and john
+		// [jane, john]
+		// [john, jane]
 
 		const existingConversation = await ctx.db
 			.query("conversations")
-			.filter((q) => q.eq(q.field("participants"), sortedParticipants))
+			.filter((q) =>
+				q.or(
+					q.eq(q.field("participants"), args.participants),
+					q.eq(q.field("participants"), args.participants.reverse())
+				)
+			)
 			.first();
 
 		if (existingConversation) {
@@ -33,7 +38,7 @@ export const createConversation = mutation({
 		}
 
 		const conversationId = await ctx.db.insert("conversations", {
-			participants: sortedParticipants,
+			participants: args.participants,
 			isGroup: args.isGroup,
 			groupName: args.groupName,
 			groupImage,
@@ -44,36 +49,31 @@ export const createConversation = mutation({
 	},
 });
 
-// ✅ Get My Conversations
 export const getMyConversations = query({
 	args: {},
-	handler: async (ctx) => {
+	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) return []; // ✅ Prevent crash if not signed in
+		if (!identity) throw new ConvexError("Unauthorized");
 
 		const user = await ctx.db
 			.query("users")
-			.withIndex("by_tokenIdentifier", (q) =>
-				q.eq("tokenIdentifier", identity.tokenIdentifier)
-			)
+			.withIndex("by_tokenIdentifier", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
 			.unique();
 
-		if (!user) return []; // ✅ Avoid throwing error on missing user
+		if (!user) throw new ConvexError("User not found");
 
 		const conversations = await ctx.db.query("conversations").collect();
 
-		const myConversations = conversations.filter((c) =>
-			c.participants.includes(user._id)
-		);
+		const myConversations = conversations.filter((conversation) => {
+			return conversation.participants.includes(user._id);
+		});
 
 		const conversationsWithDetails = await Promise.all(
 			myConversations.map(async (conversation) => {
 				let userDetails = {};
 
 				if (!conversation.isGroup) {
-					const otherUserId = conversation.participants.find(
-						(id) => id !== user._id
-					);
+					const otherUserId = conversation.participants.find((id) => id !== user._id);
 					const userProfile = await ctx.db
 						.query("users")
 						.filter((q) => q.eq(q.field("_id"), otherUserId))
@@ -88,6 +88,7 @@ export const getMyConversations = query({
 					.order("desc")
 					.take(1);
 
+				// return should be in this order, otherwise _id field will be overwritten
 				return {
 					...userDetails,
 					...conversation,
@@ -100,7 +101,6 @@ export const getMyConversations = query({
 	},
 });
 
-// ✅ Kick User From Conversation
 export const kickUser = mutation({
 	args: {
 		conversationId: v.id("conversations"),
@@ -117,20 +117,12 @@ export const kickUser = mutation({
 
 		if (!conversation) throw new ConvexError("Conversation not found");
 
-		// Optional: Check if current user is admin
-		// const user = await ctx.db
-		// 	.query("users")
-		// 	.withIndex("by_tokenIdentifier", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
-		// 	.unique();
-		// if (conversation.admin !== user?._id) throw new ConvexError("Only admin can kick users");
-
 		await ctx.db.patch(args.conversationId, {
 			participants: conversation.participants.filter((id) => id !== args.userId),
 		});
 	},
 });
 
-// ✅ Upload URL Generator
 export const generateUploadUrl = mutation(async (ctx) => {
 	return await ctx.storage.generateUploadUrl();
 });

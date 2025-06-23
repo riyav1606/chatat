@@ -2,8 +2,7 @@
 const nextConfig = {
 	images: {
 		remotePatterns: [
-			{ hostname: "valiant-partridge-243.convex.cloud" },
-			{ hostname: "oaidalleapiprodscus.blob.core.windows.net" },
+			{ hostname: "agile-magpie-985.convex.cloud" },
 		],
 	},
 };

@@ -61,3 +61,6 @@ http.route({
 });
 
 export default http;
+
+// https://docs.convex.dev/functions/http-actions
+// Internal functions can only be called by other functions and cannot be called directly from a Convex client.
