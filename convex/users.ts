@@ -63,6 +63,7 @@ export const setUserOffline = internalMutation({
 
 		if (!user) {
 			throw new ConvexError("User not found");
+			//return null;
 		}
 
 		await ctx.db.patch(user._id, { isOnline: false });
@@ -87,7 +88,8 @@ export const getMe = query({
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity) {
-			throw new ConvexError("Unauthorized");
+			//throw new ConvexError("Unauthorized");
+			return null;
 		}
 
 		const user = await ctx.db
@@ -96,7 +98,8 @@ export const getMe = query({
 			.unique();
 
 		if (!user) {
-			throw new ConvexError("User not found");
+			//throw new ConvexError("User not found");
+			return null;
 		}
 
 		return user;
