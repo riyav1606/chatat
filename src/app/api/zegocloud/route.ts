@@ -30,4 +30,3 @@ export async function GET(req: Request) {
 		});
 	}
 }
-tum hii krdo route.ts mein ye replace kro aur commit kro
