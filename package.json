@@ -32,7 +32,7 @@
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.5.2",
     "react-player": "^2.15.1",
-    "svix": "^1.21.0",
+    "svix": "^1.68.0",
     "swr": "1.3.0",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",

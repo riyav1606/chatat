@@ -88,8 +88,8 @@ export const getMe = query({
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity) {
-			//throw new ConvexError("Unauthorized");
-			return null;
+			throw new ConvexError("Unauthorized");
+			//return null;
 		}
 
 		const user = await ctx.db
@@ -98,8 +98,8 @@ export const getMe = query({
 			.unique();
 
 		if (!user) {
-			//throw new ConvexError("User not found");
-			return null;
+			throw new ConvexError("User not found");
+			//return null;
 		}
 
 		return user;
